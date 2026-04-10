@@ -2,43 +2,62 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-// Sử dụng process.env.PORT của CodeSandbox, nếu không có thì fallback về 8080
 const PORT = process.env.PORT || 8080;
 
-// Kích hoạt CORS (Rất quan trọng vì Frontend của bạn chạy ở một URL CodeSandbox khác)
 app.use(cors());
+app.use(express.json());
 
-// Dữ liệu mock cứng theo slide bài giảng
-const BlogPosts = {
-  "first-blog-post": {
+// Cấu trúc array theo slide
+const BlogPosts = [
+  {
+    slug: "first-blog-post",
     title: "First Blog Post",
     description: "Lorem ipsum dolor sit amet, consectetur adip.",
   },
-  "second-blog-post": {
+  {
+    slug: "second-blog-post",
     title: "Second Blog Post",
     description: "Hello React Router v6",
   },
-};
+];
 
-// API 1: Lấy danh sách toàn bộ bài viết
+// GET all posts
 app.get("/api/posts", (req, res) => {
-  res.json(BlogPosts);
+  res.send(JSON.stringify(BlogPosts));
 });
 
-// API 2: Lấy chi tiết bài viết dựa theo slug
-app.get("/api/posts/:slug", (req, res) => {
+// GET post by slug
+app.get("/api/post/:slug", (req, res) => {
   const slug = req.params.slug;
-  const post = BlogPosts[slug];
+  const post = BlogPosts.find((element) => element.slug === slug);
+  if (post) res.send(JSON.stringify(post));
+  else res.status(404).send("Not found");
+});
 
-  if (post) {
-    res.json(post);
+// POST new post
+app.post("/api/post", (req, res) => {
+  const post = {
+    slug: req.body.slug,
+    title: req.body.title,
+    description: req.body.description,
+  };
+  BlogPosts.push(post);
+  res.status(200).send({ message: "Posted successful" });
+});
+
+// POST login
+app.post("/api/login", (req, res) => {
+  const creds = {
+    username: req.body.username,
+    password: req.body.password,
+  };
+  if (creds.username === "admin" && creds.password === "123") {
+    res.status(200).send({ message: "Login successful" });
   } else {
-    // Trả về mã lỗi 404 nếu không tìm thấy bài viết
-    res.status(404).json({ message: "Post not found" });
+    res.status(400).send({ message: "Login failed" });
   }
 });
 
-// Lắng nghe port
 app.listen(PORT, () => {
   console.log(`Backend server is running on port ${PORT}`);
 });
