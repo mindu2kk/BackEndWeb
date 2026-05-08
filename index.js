@@ -12,31 +12,31 @@ app.use(express.json());
 
 // Root route
 app.get("/", (req, res) => {
-  res.send({ message: "Simple Blog API is running", endpoints: ["/api/posts", "/api/post/:slug"] });
+  res.json({ message: "Simple Blog API is running", endpoints: ["/api/posts", "/api/post/:slug", "/api/login"] });
 });
 
-// Login endpoint (unchanged)
+// Login endpoint
 app.post("/api/login", (req, res) => {
-  const creds = {
-    username: req.body.username,
-    password: req.body.password,
-  };
-  if (creds.username === "admin" && creds.password === "123") {
-    res.status(200).send({ message: "Login successful" });
+  const { username, password } = req.body;
+  if (username === "admin" && password === "123") {
+    res.status(200).json({ message: "Login successful" });
   } else {
-    res.status(400).send({ message: "Login failed" });
+    res.status(400).json({ message: "Login failed" });
   }
 });
 
-(async () => {
-  try {
-    await dbConnect();
+// Start server first, then connect DB
+app.listen(PORT, () => {
+  console.log(`Backend server is running on port ${PORT}`);
+});
+
+// Connect to MongoDB and mount post routes
+dbConnect()
+  .then(() => {
     app.use("/api", PostRouter);
-    app.listen(PORT, () => {
-      console.log(`Backend server is running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error("Startup failed:", err.message);
-    process.exit(1);
-  }
-})();
+    console.log("MongoDB connected, post routes mounted.");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection failed:", err.message);
+    console.warn("Post routes will not be available.");
+  });
