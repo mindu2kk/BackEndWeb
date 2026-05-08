@@ -10,6 +10,11 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
+// Root route
+app.get("/", (req, res) => {
+  res.send({ message: "Simple Blog API is running", endpoints: ["/api/posts", "/api/post/:slug"] });
+});
+
 // Login endpoint (unchanged)
 app.post("/api/login", (req, res) => {
   const creds = {
