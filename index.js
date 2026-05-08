@@ -33,7 +33,15 @@ app.use("/api", PostRouter);
 
 // Connect to MongoDB then start server
 dbConnect()
-  .then(() => {
+  .then(async () => {
+    // Migrate old posts that don't have comments field
+    const Post = require("./db/postModel");
+    await Post.updateMany(
+      { comments: { $exists: false } },
+      { $set: { comments: [] } }
+    );
+    console.log("Migration done: comments field ensured on all posts.");
+
     app.listen(PORT, () => {
       console.log(`Backend server is running on port ${PORT}`);
     });
