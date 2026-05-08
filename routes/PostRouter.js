@@ -77,4 +77,46 @@ router.delete("/post/:slug", async (request, response) => {
   }
 });
 
+// POST /api/post/:slug/comment — add comment to post
+router.post("/post/:slug/comment", async (request, response) => {
+  const { author, content } = request.body;
+  if (!author || !content) {
+    return response.status(400).send({ error: "author and content are required" });
+  }
+  try {
+    const post = await Post.findOne({ slug: request.params.slug });
+    if (!post) {
+      return response.status(404).send({ error: "Post not found" });
+    }
+    post.comments.push({ author, content });
+    await post.save();
+    response.status(201).send(post.comments[post.comments.length - 1]);
+  } catch (error) {
+    response.status(500).send({ error: "Internal server error" });
+  }
+});
+
+// PATCH /api/post/:slug/comment/:commentId — edit a comment
+router.patch("/post/:slug/comment/:commentId", async (request, response) => {
+  const { content } = request.body;
+  if (!content) {
+    return response.status(400).send({ error: "content is required" });
+  }
+  try {
+    const post = await Post.findOne({ slug: request.params.slug });
+    if (!post) {
+      return response.status(404).send({ error: "Post not found" });
+    }
+    const comment = post.comments.id(request.params.commentId);
+    if (!comment) {
+      return response.status(404).send({ error: "Comment not found" });
+    }
+    comment.content = content;
+    await post.save();
+    response.status(200).send(comment);
+  } catch (error) {
+    response.status(500).send({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;

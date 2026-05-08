@@ -1,5 +1,20 @@
 const mongoose = require("mongoose");
 
+const CommentSchema = new mongoose.Schema({
+  author: {
+    type: String,
+    required: [true, "Please provide an author name"],
+  },
+  content: {
+    type: String,
+    required: [true, "Please provide comment content"],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const PostSchema = new mongoose.Schema({
   slug: {
     type: String,
@@ -13,6 +28,10 @@ const PostSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, "Please provide a description!"],
+  },
+  comments: {
+    type: [CommentSchema],
+    default: [],
   },
 });
 
