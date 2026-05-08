@@ -12,7 +12,10 @@ app.use(express.json());
 
 // Root route
 app.get("/", (req, res) => {
-  res.json({ message: "Simple Blog API is running", endpoints: ["/api/posts", "/api/post/:slug", "/api/login"] });
+  res.json({
+    message: "Simple Blog API is running",
+    endpoints: ["/api/posts", "/api/post/:slug", "/api/login"],
+  });
 });
 
 // Login endpoint
@@ -25,18 +28,17 @@ app.post("/api/login", (req, res) => {
   }
 });
 
-// Start server first, then connect DB
-app.listen(PORT, () => {
-  console.log(`Backend server is running on port ${PORT}`);
-});
+// Mount post routes
+app.use("/api", PostRouter);
 
-// Connect to MongoDB and mount post routes
+// Connect to MongoDB then start server
 dbConnect()
   .then(() => {
-    app.use("/api", PostRouter);
-    console.log("MongoDB connected, post routes mounted.");
+    app.listen(PORT, () => {
+      console.log(`Backend server is running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("MongoDB connection failed:", err.message);
-    console.warn("Post routes will not be available.");
+    process.exit(1);
   });
